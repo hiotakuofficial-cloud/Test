@@ -33,4 +33,34 @@ class ApiService {
     final response = await http.get(Uri.parse('$baseUrl/stream?id=$episodeId&server=$server&type=$type'));
     return json.decode(response.body);
   }
+  
+  static Future<Map<String, dynamic>> getWorkingStream(String episodeId) async {
+    try {
+      // Get available servers first
+      final serversData = await getServers(episodeId);
+      if (!serversData['success'] || serversData['data'] == null) {
+        return {'success': false, 'error': 'No servers available'};
+      }
+
+      final servers = serversData['data']['sub'] as List;
+      
+      // Try each server until one works
+      for (var server in servers) {
+        if (server['name'] != null) {
+          try {
+            final streamData = await getStream(episodeId, server: server['name'], type: 'sub');
+            if (streamData['success'] && streamData['data'] != null) {
+              return streamData;
+            }
+          } catch (e) {
+            continue; // Try next server
+          }
+        }
+      }
+      
+      return {'success': false, 'error': 'No working servers found'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }

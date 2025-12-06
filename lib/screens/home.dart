@@ -95,8 +95,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _playEpisode(String episodeId) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text('Finding working server...'),
+          ],
+        ),
+      ),
+    );
+
     try {
-      final streamData = await ApiService.getStream(episodeId);
+      final streamData = await ApiService.getWorkingStream(episodeId);
+      Navigator.pop(context); // Close loading dialog
+      
       if (streamData['success'] && streamData['data'] != null) {
         final streamUrl = streamData['data']['link']['file'];
         
@@ -111,12 +127,13 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No stream available')),
+          SnackBar(content: Text('No working stream found: ${streamData['error'] ?? 'Unknown error'}')),
         );
       }
     } catch (e) {
+      Navigator.pop(context); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting stream: $e')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
