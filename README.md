@@ -45,4 +45,4 @@ flutter build ios --release
 5. Create Pull Request
 
 ## License
-MIT License
+MIT LicenseSSH connection configured ✅
