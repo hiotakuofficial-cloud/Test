@@ -1,3 +1,17 @@
-# Test
+# Flutter Test App
 
-Flutter project
+## Structure
+```
+lib/
+├── main.dart
+├── screens/
+├── services/
+├── models/
+└── widgets/
+```
+
+## Run
+```bash
+flutter pub get
+flutter run
+```
