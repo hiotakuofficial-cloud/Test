@@ -61,7 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       return ListTile(
                         leading: Image.network(anime.poster, width: 50),
                         title: Text(anime.title),
-                        subtitle: Text('${anime.type} • ${anime.episodes['eps']} eps'),
+                        subtitle: Text('${anime.type ?? 'Unknown'} • ${anime.episodes?['eps'] ?? 'N/A'} eps'),
                       );
                     },
                   ),

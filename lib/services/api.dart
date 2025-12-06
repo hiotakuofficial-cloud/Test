@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const baseUrl = 'https://servepiu.onrender.com/api/v1';
+  static const baseUrl = 'https://server-hiotaku.onrender.com/api/v1';
   
   static Future<Map<String, dynamic>> getHome() async {
     final response = await http.get(Uri.parse('$baseUrl/home'));
@@ -24,8 +24,13 @@ class ApiService {
     return json.decode(response.body);
   }
   
-  static Future<Map<String, dynamic>> getStream(String episodeId) async {
-    final response = await http.get(Uri.parse('$baseUrl/stream?id=$episodeId'));
+  static Future<Map<String, dynamic>> getServers(String episodeId) async {
+    final response = await http.get(Uri.parse('$baseUrl/servers?id=$episodeId'));
+    return json.decode(response.body);
+  }
+  
+  static Future<Map<String, dynamic>> getStream(String episodeId, {String server = 'HD-2', String type = 'sub'}) async {
+    final response = await http.get(Uri.parse('$baseUrl/stream?id=$episodeId&server=$server&type=$type'));
     return json.decode(response.body);
   }
 }
