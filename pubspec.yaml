@@ -10,6 +10,7 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   video_player: ^2.8.1
+  better_player: ^0.0.83
 
 dev_dependencies:
   flutter_test:

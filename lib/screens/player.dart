@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:better_player/better_player.dart';
 
 class PlayerScreen extends StatefulWidget {
   final String streamUrl;
@@ -12,8 +12,7 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  VideoPlayerController? _controller;
-  bool _isLoading = true;
+  BetterPlayerController? _controller;
 
   @override
   void initState() {
@@ -21,50 +20,42 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _initializePlayer();
   }
 
-  _initializePlayer() async {
-    try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.streamUrl));
-      await _controller!.initialize();
-      setState(() => _isLoading = false);
-      _controller!.play();
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading video: $e')),
-      );
-    }
+  _initializePlayer() {
+    BetterPlayerDataSource dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      widget.streamUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': 'https://hianime.to/',
+      },
+    );
+
+    _controller = BetterPlayerController(
+      BetterPlayerConfiguration(
+        aspectRatio: 16 / 9,
+        autoPlay: true,
+        looping: false,
+        fullScreenByDefault: false,
+        allowedScreenSleep: false,
+        controlsConfiguration: BetterPlayerControlsConfiguration(
+          enablePlayPause: true,
+          enableMute: true,
+          enableFullscreen: true,
+          enableProgressBar: true,
+          enableSkips: false,
+        ),
+      ),
+      betterPlayerDataSource: dataSource,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _controller!.value.isInitialized
-              ? Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: _controller!.value.aspectRatio,
-                      child: VideoPlayer(_controller!),
-                    ),
-                    VideoProgressIndicator(_controller!, allowScrubbing: true),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: Icon(_controller!.value.isPlaying ? Icons.pause : Icons.play_arrow),
-                          onPressed: () {
-                            setState(() {
-                              _controller!.value.isPlaying ? _controller!.pause() : _controller!.play();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : Center(child: Text('Failed to load video')),
+      body: _controller != null
+          ? BetterPlayer(controller: _controller!)
+          : Center(child: CircularProgressIndicator()),
     );
   }
 

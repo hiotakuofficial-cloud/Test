@@ -99,13 +99,42 @@ class _HomeScreenState extends State<HomeScreen> {
       final streamData = await ApiService.getStream(episodeId);
       if (streamData['success'] && streamData['data'] != null) {
         final streamUrl = streamData['data']['link']['file'];
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PlayerScreen(
-              streamUrl: streamUrl,
-              title: 'Episode Player',
-            ),
+        
+        // Show options dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Play Episode'),
+            content: Text('Choose how to play this episode:'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlayerScreen(
+                        streamUrl: streamUrl,
+                        title: 'Episode Player',
+                      ),
+                    ),
+                  );
+                },
+                child: Text('Play in App'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Stream URL copied: $streamUrl'),
+                      duration: Duration(seconds: 5),
+                    ),
+                  );
+                },
+                child: Text('Show URL'),
+              ),
+            ],
           ),
         );
       } else {
@@ -115,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting stream')),
+        SnackBar(content: Text('Error getting stream: $e')),
       );
     }
   }
