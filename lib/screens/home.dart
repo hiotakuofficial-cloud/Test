@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api.dart';
 import '../models/anime.dart';
-import 'player.dart';
+import 'web_player.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -100,41 +100,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (streamData['success'] && streamData['data'] != null) {
         final streamUrl = streamData['data']['link']['file'];
         
-        // Show options dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Play Episode'),
-            content: Text('Choose how to play this episode:'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PlayerScreen(
-                        streamUrl: streamUrl,
-                        title: 'Episode Player',
-                      ),
-                    ),
-                  );
-                },
-                child: Text('Play in App'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Stream URL copied: $streamUrl'),
-                      duration: Duration(seconds: 5),
-                    ),
-                  );
-                },
-                child: Text('Show URL'),
-              ),
-            ],
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WebPlayerScreen(
+              streamUrl: streamUrl,
+              title: 'Episode Stream',
+            ),
           ),
         );
       } else {
