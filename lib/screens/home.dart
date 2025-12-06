@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             CircularProgressIndicator(),
             SizedBox(width: 20),
-            Text('Finding working server...'),
+            Text('Bypassing protection...'),
           ],
         ),
       ),
@@ -115,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       if (streamData['success'] && streamData['data'] != null) {
         final streamUrl = streamData['data']['link']['file'];
+        final isBypassed = streamData['data']['bypassed'] ?? false;
         
         Navigator.push(
           context,
@@ -122,12 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) => WebPlayerScreen(
               streamUrl: streamUrl,
               title: 'Episode Stream',
+              isBypassed: isBypassed,
             ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No working stream found: ${streamData['error'] ?? 'Unknown error'}')),
+          SnackBar(content: Text('Bypass failed: ${streamData['error'] ?? 'Unknown error'}')),
         );
       }
     } catch (e) {

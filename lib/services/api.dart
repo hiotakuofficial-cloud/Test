@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'bypass_service.dart';
 
 class ApiService {
   static const baseUrl = 'https://server-hiotaku.onrender.com/api/v1';
@@ -36,7 +37,13 @@ class ApiService {
   
   static Future<Map<String, dynamic>> getWorkingStream(String episodeId) async {
     try {
-      // Get available servers first
+      // First try bypass service
+      final bypassedStream = await BypassService.getBypassedStream(episodeId);
+      if (bypassedStream['success']) {
+        return bypassedStream;
+      }
+      
+      // Fallback to original multi-server method
       final serversData = await getServers(episodeId);
       if (!serversData['success'] || serversData['data'] == null) {
         return {'success': false, 'error': 'No servers available'};
@@ -44,16 +51,24 @@ class ApiService {
 
       final servers = serversData['data']['sub'] as List;
       
-      // Try each server until one works
       for (var server in servers) {
         if (server['name'] != null) {
           try {
             final streamData = await getStream(episodeId, server: server['name'], type: 'sub');
             if (streamData['success'] && streamData['data'] != null) {
+              // Try to bypass this URL too
+              final originalUrl = streamData['data']['link']['file'];
+              final bypassedUrl = await BypassService.getBypassedUrl(originalUrl);
+              
+              if (bypassedUrl != null) {
+                streamData['data']['link']['file'] = bypassedUrl;
+                streamData['data']['bypassed'] = true;
+              }
+              
               return streamData;
             }
           } catch (e) {
-            continue; // Try next server
+            continue;
           }
         }
       }
