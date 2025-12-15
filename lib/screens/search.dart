@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api.dart';
 import '../models/anime.dart';
+import 'episode_manager.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -29,6 +30,15 @@ class _SearchScreenState extends State<SearchScreen> {
       print('Search error: $e');
     }
     setState(() => loading = false);
+  }
+
+  _openEpisodeManager(Anime anime) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EpisodeManagerScreen(anime: anime),
+      ),
+    );
   }
 
   @override
@@ -62,6 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         leading: Image.network(anime.poster, width: 50),
                         title: Text(anime.title),
                         subtitle: Text('${anime.type ?? 'Unknown'} • ${anime.episodes?['eps'] ?? 'N/A'} eps'),
+                        onTap: () => _openEpisodeManager(anime),
                       );
                     },
                   ),

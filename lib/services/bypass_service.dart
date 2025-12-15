@@ -51,6 +51,52 @@ class BypassService {
       return null;
     }
   }
+
+  static Future<String?> getBypassedUrlWithProgress(
+    String originalUrl,
+    Function(String) onProgress,
+  ) async {
+    try {
+      onProgress('Testing bypass method 1...');
+      // Method 1: Try with bypass headers
+      final response = await http.head(
+        Uri.parse(originalUrl),
+        headers: getBypassHeaders(),
+      );
+      
+      if (response.statusCode == 200) {
+        onProgress('Bypass successful (Method 1)');
+        return originalUrl;
+      }
+      
+      onProgress('Testing bypass method 2...');
+      // Method 2: Try with CORS proxy
+      final proxyResponse = await http.head(
+        Uri.parse('$proxyUrl$originalUrl'),
+        headers: getBypassHeaders(),
+      );
+      
+      if (proxyResponse.statusCode == 200) {
+        onProgress('Bypass successful (Method 2)');
+        return '$proxyUrl$originalUrl';
+      }
+      
+      onProgress('Extracting direct URL...');
+      // Method 3: Extract direct URL from m3u8
+      final directUrl = await extractDirectUrl(originalUrl);
+      if (directUrl != null) {
+        onProgress('Direct URL extracted');
+        return directUrl;
+      }
+      
+      onProgress('All bypass methods failed');
+      return null;
+      
+    } catch (e) {
+      onProgress('Error: $e');
+      return null;
+    }
+  }
   
   static Future<String?> extractDirectUrl(String m3u8Url) async {
     try {
