@@ -1,4 +1,4 @@
-# Flutter Test App
+# Anime
 
 ## Structure
 ```
