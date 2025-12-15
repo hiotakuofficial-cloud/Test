@@ -2,37 +2,66 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'bypass_service.dart';
 
+class CacheEntry {
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+  CacheEntry(this.data, this.timestamp);
+}
+
 class ApiService {
   static const baseUrl = 'https://server-hiotaku.onrender.com/api/v1';
+  static final Map<String, CacheEntry> _cache = {};
   
+  static Future<Map<String, dynamic>> _get(String endpoint, {bool useCache = false, Duration ttl = const Duration(minutes: 5)}) async {
+    final url = '$baseUrl$endpoint';
+    
+    if (useCache && _cache.containsKey(url)) {
+      final entry = _cache[url]!;
+      if (DateTime.now().difference(entry.timestamp) < ttl) {
+        return entry.data;
+      } else {
+        _cache.remove(url);
+      }
+    }
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        if (useCache && data['success'] == true) {
+          _cache[url] = CacheEntry(data, DateTime.now());
+        }
+        return data;
+      } else {
+        return {'success': false, 'error': 'HTTP ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   static Future<Map<String, dynamic>> getHome() async {
-    final response = await http.get(Uri.parse('$baseUrl/home'));
-    return json.decode(response.body);
+    return _get('/home', useCache: true);
   }
   
   static Future<Map<String, dynamic>> search(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/search?keyword=$keyword'));
-    return json.decode(response.body);
+    return _get('/search?keyword=$keyword', useCache: true);
   }
   
   static Future<Map<String, dynamic>> getAnimeDetails(String id) async {
-    final response = await http.get(Uri.parse('$baseUrl/anime/$id'));
-    return json.decode(response.body);
+    return _get('/anime/$id', useCache: true);
   }
   
   static Future<Map<String, dynamic>> getEpisodes(String id) async {
-    final response = await http.get(Uri.parse('$baseUrl/episodes/$id'));
-    return json.decode(response.body);
+    return _get('/episodes/$id', useCache: true);
   }
   
   static Future<Map<String, dynamic>> getServers(String episodeId) async {
-    final response = await http.get(Uri.parse('$baseUrl/servers?id=$episodeId'));
-    return json.decode(response.body);
+    return _get('/servers?id=$episodeId');
   }
   
   static Future<Map<String, dynamic>> getStream(String episodeId, {String server = 'HD-2', String type = 'sub'}) async {
-    final response = await http.get(Uri.parse('$baseUrl/stream?id=$episodeId&server=$server&type=$type'));
-    return json.decode(response.body);
+    return _get('/stream?id=$episodeId&server=$server&type=$type');
   }
   
   static Future<Map<String, dynamic>> getWorkingStream(String episodeId) async {

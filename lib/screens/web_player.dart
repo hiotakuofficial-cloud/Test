@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme.dart';
 
 class WebPlayerScreen extends StatelessWidget {
   final String streamUrl;
@@ -13,14 +14,14 @@ class WebPlayerScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isBypassed == true)
               Container(
-                padding: EdgeInsets.all(8),
-                margin: EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.all(AppSpacing.sm),
+                margin: EdgeInsets.only(bottom: AppSpacing.md),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.1),
                   border: Border.all(color: Colors.green),
@@ -29,7 +30,7 @@ class WebPlayerScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(Icons.security, color: Colors.green, size: 16),
-                    SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.sm),
                     Text(
                       'Protection Bypassed Successfully!',
                       style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
@@ -39,25 +40,30 @@ class WebPlayerScreen extends StatelessWidget {
               ),
             Text(
               'Stream URL:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: AppSpacing.sm),
             Container(
-              padding: EdgeInsets.all(12),
+              padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: SelectableText(
                 streamUrl,
-                style: TextStyle(fontSize: 14),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    ),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: streamUrl));
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,12 +76,12 @@ class WebPlayerScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: AppSpacing.lg),
             Text(
               'Instructions:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: AppSpacing.sm),
             Text(
               isBypassed == true 
                 ? '✅ Protection bypassed! This URL should work in:\n\n'
@@ -89,7 +95,7 @@ class WebPlayerScreen extends StatelessWidget {
                   '3. Go to "Open Network Stream"\n'
                   '4. Paste the URL and play\n\n'
                   'Note: URLs may expire after some time.',
-              style: TextStyle(fontSize: 14),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
         ),
