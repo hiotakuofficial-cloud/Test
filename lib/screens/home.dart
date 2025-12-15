@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api.dart';
 import '../models/anime.dart';
+import 'episode_manager.dart';
+import 'player.dart';
 import 'web_player.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,95 +50,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   leading: Image.network(anime.poster, width: 50),
                   title: Text(anime.title),
                   subtitle: Text('${anime.type ?? 'Unknown'} • ${anime.episodes?['eps'] ?? 'N/A'} eps'),
-                  onTap: () => _showEpisodes(anime),
+                  onTap: () => _openEpisodeManager(anime),
                 );
               },
             ),
     );
   }
 
-  _showEpisodes(Anime anime) async {
-    try {
-      final data = await ApiService.getEpisodes(anime.id);
-      if (data['success']) {
-        showModalBottomSheet(
-          context: context,
-          builder: (context) => Container(
-            height: 400,
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(anime.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: (data['data'] as List).length,
-                    itemBuilder: (context, index) {
-                      final episode = data['data'][index];
-                      return ListTile(
-                        title: Text(episode['title']),
-                        subtitle: Text('Episode ${episode['episodeNumber']}'),
-                        onTap: () => _playEpisode(episode['id']),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading episodes')),
-      );
-    }
-  }
-
-  _playEpisode(String episodeId) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Text('Bypassing protection...'),
-          ],
-        ),
+  _openEpisodeManager(Anime anime) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EpisodeManagerScreen(anime: anime),
       ),
     );
-
-    try {
-      final streamData = await ApiService.getWorkingStream(episodeId);
-      Navigator.pop(context); // Close loading dialog
-      
-      if (streamData['success'] && streamData['data'] != null) {
-        final streamUrl = streamData['data']['link']['file'];
-        final isBypassed = streamData['data']['bypassed'] ?? false;
-        
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WebPlayerScreen(
-              streamUrl: streamUrl,
-              title: 'Episode Stream',
-              isBypassed: isBypassed,
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bypass failed: ${streamData['error'] ?? 'Unknown error'}')),
-        );
-      }
-    } catch (e) {
-      Navigator.pop(context); // Close loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
   }
 }
