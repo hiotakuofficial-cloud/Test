@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/home.dart';
 import 'screens/search.dart';
+import 'screens/watchlist.dart';
+import 'providers/watchlist_provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,10 +12,13 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Anime App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MainScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => WatchlistProvider(),
+      child: MaterialApp(
+        title: 'Anime App',
+        theme: ThemeData(primarySwatch: Colors.blue),
+        home: MainScreen(),
+      ),
     );
   }
 }
@@ -27,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     HomeScreen(),
     SearchScreen(),
+    WatchlistScreen(),
   ];
 
   @override
@@ -39,6 +46,7 @@ class _MainScreenState extends State<MainScreen> {
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Watchlist'),
         ],
       ),
     );

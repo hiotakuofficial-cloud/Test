@@ -31,4 +31,17 @@ class Anime {
       rank: json['rank'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'alternativeTitle': alternativeTitle,
+      'poster': poster,
+      'type': type,
+      'episodes': episodes,
+      'duration': duration,
+      'rank': rank,
+    };
+  }
 }

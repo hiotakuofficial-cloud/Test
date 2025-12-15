@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/api.dart';
 import '../models/anime.dart';
+import '../providers/watchlist_provider.dart';
 import 'web_player.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -8,7 +10,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   List<Anime> trending = [];
   bool loading = true;
 
@@ -44,11 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: trending.length,
               itemBuilder: (context, index) {
                 final anime = trending[index];
-                return ListTile(
-                  leading: Image.network(anime.poster, width: 50),
-                  title: Text(anime.title),
-                  subtitle: Text('${anime.type ?? 'Unknown'} • ${anime.episodes?['eps'] ?? 'N/A'} eps'),
-                  onTap: () => _showEpisodes(anime),
+                return _AnimeListTile(
+                  anime: anime,
+                  onTapEpisodes: _showEpisodes,
                 );
               },
             ),
@@ -138,5 +138,61 @@ class _HomeScreenState extends State<HomeScreen> {
         SnackBar(content: Text('Error: $e')),
       );
     }
+  }
+}
+
+class _AnimeListTile extends StatelessWidget {
+  final Anime anime;
+  final Function(Anime) onTapEpisodes;
+
+  const _AnimeListTile({
+    required this.anime,
+    required this.onTapEpisodes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<WatchlistProvider>(
+      builder: (context, watchlistProvider, child) {
+        return FutureBuilder<bool>(
+          future: watchlistProvider.isInWatchlist(anime.id),
+          builder: (context, snapshot) {
+            final isInWatchlist = snapshot.data ?? false;
+            
+            return ListTile(
+              leading: Image.network(anime.poster, width: 50),
+              title: Text(anime.title),
+              subtitle: Text('${anime.type ?? 'Unknown'} • ${anime.episodes?['eps'] ?? 'N/A'} eps'),
+              trailing: IconButton(
+                icon: Icon(
+                  isInWatchlist ? Icons.favorite : Icons.favorite_border,
+                  color: isInWatchlist ? Colors.red : null,
+                ),
+                onPressed: () async {
+                  if (isInWatchlist) {
+                    await watchlistProvider.removeFromWatchlist(anime.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Removed from watchlist'),
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () => watchlistProvider.addToWatchlist(anime),
+                        ),
+                      ),
+                    );
+                  } else {
+                    await watchlistProvider.addToWatchlist(anime);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Added to watchlist')),
+                    );
+                  }
+                },
+              ),
+              onTap: () => onTapEpisodes(anime),
+            );
+          },
+        );
+      },
+    );
   }
 }
