@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/search_filters.dart';
 import 'bypass_service.dart';
 
 class ApiService {
@@ -10,8 +11,14 @@ class ApiService {
     return json.decode(response.body);
   }
   
-  static Future<Map<String, dynamic>> search(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/search?keyword=$keyword'));
+  static Future<Map<String, dynamic>> search(String keyword, {SearchFilters? filters}) async {
+    final params = <String, String>{'keyword': keyword};
+    if (filters != null) {
+      params.addAll(filters.toQueryParams());
+    }
+    
+    final uri = Uri.parse('$baseUrl/search').replace(queryParameters: params);
+    final response = await http.get(uri);
     return json.decode(response.body);
   }
   

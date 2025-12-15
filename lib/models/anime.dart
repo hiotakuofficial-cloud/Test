@@ -7,6 +7,10 @@ class Anime {
   final Map<String, int>? episodes;
   final String? duration;
   final int? rank;
+  final double? rating;
+  final int? releaseYear;
+  final String? status;
+  final List<String>? genres;
   
   Anime({
     required this.id,
@@ -17,6 +21,10 @@ class Anime {
     this.episodes,
     this.duration,
     this.rank,
+    this.rating,
+    this.releaseYear,
+    this.status,
+    this.genres,
   });
   
   factory Anime.fromJson(Map<String, dynamic> json) {
@@ -29,6 +37,10 @@ class Anime {
       episodes: json['episodes'] != null ? Map<String, int>.from(json['episodes']) : null,
       duration: json['duration'],
       rank: json['rank'],
+      rating: json['rating'] != null ? double.tryParse(json['rating'].toString()) : null,
+      releaseYear: json['releaseYear'],
+      status: json['status'],
+      genres: json['genres'] != null ? List<String>.from(json['genres']) : null,
     );
   }
 }
