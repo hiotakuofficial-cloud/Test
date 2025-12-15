@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'bypass_service.dart';
+import '../models/anime.dart';
 
 class ApiService {
   static const baseUrl = 'https://server-hiotaku.onrender.com/api/v1';
@@ -8,6 +9,18 @@ class ApiService {
   static Future<Map<String, dynamic>> getHome() async {
     final response = await http.get(Uri.parse('$baseUrl/home'));
     return json.decode(response.body);
+  }
+
+  static Future<HomeData?> getHomeData() async {
+    try {
+      final data = await getHome();
+      if (data['success'] && data['data'] != null) {
+        return HomeData.fromJson(data['data']);
+      }
+    } catch (e) {
+      print('Error fetching home data: $e');
+    }
+    return null;
   }
   
   static Future<Map<String, dynamic>> search(String keyword) async {
